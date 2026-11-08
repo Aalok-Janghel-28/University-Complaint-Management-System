@@ -1,0 +1,39 @@
+from django.urls import path
+
+from .views import (
+    AIAnalyzeTextAPIView,
+    AIChatAPIView,
+    AIStatusAPIView,
+    AITrainAPIView,
+    ComplaintAIInsightAPIView,
+    ComplaintAnalyticsAPIView,
+    ComplaintAssignmentAPIView,
+    ComplaintCommentsAPIView,
+    ComplaintDetailAPIView,
+    ComplaintHistoryAPIView,
+    ComplaintListCreateAPIView,
+    ComplaintResolutionAPIView,
+    ComplaintStatusAPIView,
+    DepartmentListCreateAPIView,
+    NotificationListAPIView,
+    NotificationReadAPIView,
+)
+
+urlpatterns = [
+    path('departments/', DepartmentListCreateAPIView.as_view(), name='department-list-create'),
+    path('ai/status/', AIStatusAPIView.as_view(), name='ai-status'),
+    path('ai/analyze/', AIAnalyzeTextAPIView.as_view(), name='ai-analyze'),
+    path('ai/chat/', AIChatAPIView.as_view(), name='ai-chat'),
+    path('ai/train/', AITrainAPIView.as_view(), name='ai-train'),
+    path('', ComplaintListCreateAPIView.as_view(), name='complaint-list-create'),
+    path('<int:pk>/', ComplaintDetailAPIView.as_view(), name='complaint-detail'),
+    path('<int:complaint_id>/assign/', ComplaintAssignmentAPIView.as_view(), name='complaint-assign'),
+    path('<int:complaint_id>/status/', ComplaintStatusAPIView.as_view(), name='complaint-status'),
+    path('<int:complaint_id>/resolve/', ComplaintResolutionAPIView.as_view(), name='complaint-resolve'),
+    path('<int:complaint_id>/comments/', ComplaintCommentsAPIView.as_view(), name='complaint-comments'),
+    path('<int:complaint_id>/history/', ComplaintHistoryAPIView.as_view(), name='complaint-history'),
+    path('notifications/', NotificationListAPIView.as_view(), name='notifications-list'),
+    path('notifications/<int:notification_id>/read/', NotificationReadAPIView.as_view(), name='notification-read'),
+    path('analytics/', ComplaintAnalyticsAPIView.as_view(), name='complaint-analytics'),
+    path('<int:complaint_id>/ai-insight/', ComplaintAIInsightAPIView.as_view(), name='complaint-ai-insight'),
+]

@@ -1,0 +1,11 @@
+{
+  "version": "v20260922.084652",
+  "trained_at": "2026-09-22T08:46:52.122466+00:00",
+  "samples_trained": 50000,
+  "category_accuracy": 1.0,
+  "priority_accuracy": 0.4512,
+  "sentiment_accuracy": 0.6508,
+  "intent_accuracy": 1.0,
+  "feature_space": 262144,
+  "algorithm": "HashingVectorizer + SGDClassifier (incremental)"
+}
