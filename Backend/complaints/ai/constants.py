@@ -25,5 +25,5 @@ CATEGORY_DEPARTMENT_MAP = {
     'waste_management': 'Sanitation',
     'healthcare': 'Healthcare',
     'education': 'Education',
-    'general': 'Water Supply',
+    'general': 'General Services',
 }

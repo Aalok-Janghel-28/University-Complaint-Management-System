@@ -21,6 +21,7 @@ const ComplaintFormPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiPreview, setAiPreview] = useState(null)
+  const [attachments, setAttachments] = useState([])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -61,13 +62,14 @@ const ComplaintFormPage = () => {
     setIsSubmitting(true)
 
     try {
-      const { data } = await complaintsApi.create({
-        ...form,
-        source: 'web',
-      })
+      const payload = new FormData()
+      Object.entries({ ...form, source: 'web' }).forEach(([key, value]) => payload.append(key, value))
+      attachments.forEach((file) => payload.append('attachments', file))
+      const { data } = await complaintsApi.create(payload)
       setSuccess(`Complaint submitted successfully. Ticket ID: ${data.ticket_id}`)
       setForm(initialForm)
       setAiPreview(null)
+      setAttachments([])
       setTimeout(() => navigate(`/complaints/${data.id}`), 1500)
     } catch (apiError) {
       const detail = apiError.response?.data
@@ -105,6 +107,22 @@ const ComplaintFormPage = () => {
             />
           </label>
 
+          <label className="block rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4">
+            <span className="block text-sm font-semibold text-slate-800">Evidence and attachments</span>
+            <span className="mt-1 block text-xs text-slate-500">Add up to 5 photos or PDF files, up to 10 MB each.</span>
+            <input
+              className="mt-3 block w-full text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-emerald-100 file:px-4 file:py-2 file:font-semibold file:text-emerald-800 hover:file:bg-emerald-200"
+              type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.pdf"
+              onChange={(event) => {
+                const selected = Array.from(event.target.files || [])
+                if (selected.length > 5) setError('Choose up to five files.')
+                else if (selected.some((file) => file.size > 10 * 1024 * 1024)) setError('Each attachment must be 10 MB or smaller.')
+                else { setError(''); setAttachments(selected) }
+              }}
+            />
+            {attachments.length > 0 && <p className="mt-2 text-xs text-slate-600">{attachments.map((file) => file.name).join(' · ')}</p>}
+          </label>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-slate-700">Category</span>
@@ -119,6 +137,7 @@ const ComplaintFormPage = () => {
                 <option value="road">Road & Traffic</option>
                 <option value="electricity">Electricity</option>
                 <option value="public_safety">Public Safety</option>
+                <option value="waste_management">Waste Management</option>
                 <option value="education">Education</option>
                 <option value="healthcare">Healthcare</option>
                 <option value="general">General Service</option>
@@ -211,6 +230,7 @@ const ComplaintFormPage = () => {
               onClick={() => {
                 setForm(initialForm)
                 setAiPreview(null)
+                setAttachments([])
               }}
               className="rounded-full border border-slate-300 px-5 py-2.5 font-semibold text-slate-700 hover:border-slate-400"
             >

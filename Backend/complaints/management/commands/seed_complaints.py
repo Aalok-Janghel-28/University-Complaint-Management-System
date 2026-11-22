@@ -15,6 +15,8 @@ class Command(BaseCommand):
             ('Electricity', 'ELE', 'Power outage and electrical maintenance tickets', 'electrical@city.gov', '+1-555-2104'),
             ('Healthcare', 'HSC', 'Public health and local clinic support', 'health@city.gov', '+1-555-2105'),
             ('Public Safety', 'PS', 'Security and public safety complaints', 'safety@city.gov', '+1-555-2106'),
+            ('Education', 'EDU', 'Classroom, laboratory, internet and academic facility concerns', 'education@city.gov', '+1-555-2107'),
+            ('General Services', 'GEN', 'General campus services and maintenance requests', 'services@city.gov', '+1-555-2108'),
         ]
 
         created_departments = []
@@ -45,6 +47,7 @@ class Command(BaseCommand):
         )
         officer.set_password('password123')
         officer.save()
+        created_departments[0].officers.add(officer)
 
         admin, _ = User.objects.get_or_create(
             email='admin@example.com',

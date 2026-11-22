@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/useAuth'
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -72,6 +72,8 @@ const LoginPage = () => {
               required
             />
           </label>
+
+          <div className="-mt-2 text-right"><Link className="text-sm font-semibold text-emerald-700 hover:text-emerald-900" to="/reset-password">Forgot password?</Link></div>
 
           {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 

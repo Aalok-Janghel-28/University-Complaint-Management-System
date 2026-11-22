@@ -1,8 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { authApi, tokenStorage } from '../api/authApi'
-
-const AuthContext = createContext(null)
+import AuthContext from './authContext'
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
@@ -11,8 +10,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadProfile = async () => {
       if (!tokenStorage.getAccessToken()) {
-        setIsLoading(false)
-        return
+        try {
+          const { data } = await authApi.refreshSession()
+          tokenStorage.setTokens(data)
+        } catch {
+          tokenStorage.clear()
+          setIsLoading(false)
+          return
+        }
       }
 
       try {
@@ -43,11 +48,8 @@ export const AuthProvider = ({ children }) => {
   }
 
   const logout = async () => {
-    const refresh = tokenStorage.getRefreshToken()
     try {
-      if (refresh) {
-        await authApi.logout(refresh)
-      }
+      await authApi.logout()
     } finally {
       tokenStorage.clear()
       setUser(null)
@@ -74,12 +76,4 @@ export const AuthProvider = ({ children }) => {
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used inside AuthProvider.')
-  }
-  return context
 }

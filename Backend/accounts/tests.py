@@ -20,7 +20,9 @@ class AuthenticationAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+        self.assertNotIn('refresh', response.data)
+        self.assertIn('refresh_token', response.cookies)
+        self.assertTrue(response.cookies['refresh_token']['httponly'])
         self.assertEqual(response.data['user']['email'], self.register_payload['email'])
         self.assertEqual(response.data['user']['role'], User.Role.CITIZEN)
 

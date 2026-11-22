@@ -11,6 +11,7 @@ import ComplaintFormPage from './pages/ComplaintFormPage'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 import ProfilePage from './pages/ProfilePage'
+import PasswordResetPage from './pages/PasswordResetPage'
 import RegisterPage from './pages/RegisterPage'
 import { ADMIN_ROLES } from './utils/formatters'
 
@@ -20,6 +21,7 @@ const App = () => {
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/reset-password" element={<PasswordResetPage />} />
 
       <Route
         path="/dashboard"

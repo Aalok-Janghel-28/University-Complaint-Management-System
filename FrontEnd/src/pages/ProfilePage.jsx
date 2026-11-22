@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { authApi } from '../api/authApi'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/useAuth'
 
 const ProfilePage = () => {
   const { user, logout, refreshProfile } = useAuth()
@@ -17,6 +17,9 @@ const ProfilePage = () => {
   })
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [passwordForm, setPasswordForm] = useState({ old_password: '', new_password: '', new_password_confirm: '' })
+  const [passwordMessage, setPasswordMessage] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -43,6 +46,19 @@ const ProfilePage = () => {
       setMessage('Profile updated successfully.')
     } catch {
       setError('Profile update failed.')
+    }
+  }
+
+  const changePassword = async (event) => {
+    event.preventDefault(); setPasswordError(''); setPasswordMessage('')
+    try {
+      const { data } = await authApi.changePassword(passwordForm)
+      setPasswordMessage(data.message || 'Password changed successfully.')
+      setPasswordForm({ old_password: '', new_password: '', new_password_confirm: '' })
+    } catch (apiError) {
+      const values = apiError.response?.data
+      const first = values && Object.values(values)[0]
+      setPasswordError(Array.isArray(first) ? first[0] : first || 'Password could not be changed.')
     }
   }
 
@@ -158,6 +174,13 @@ const ProfilePage = () => {
             </dl>
           </aside>
         </div>
+
+        <form className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm" onSubmit={changePassword}>
+          <h2 className="text-xl font-semibold text-slate-950">Change password</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">{[['old_password','Current password'],['new_password','New password'],['new_password_confirm','Confirm new password']].map(([name,label]) => <label key={name} className="block text-sm font-medium text-slate-700">{label}<input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" type="password" autoComplete="new-password" value={passwordForm[name]} onChange={(event) => setPasswordForm((current) => ({ ...current, [name]: event.target.value }))} required /></label>)}</div>
+          {passwordMessage && <p role="status" className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{passwordMessage}</p>}{passwordError && <p role="alert" className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{passwordError}</p>}
+          <button className="mt-5 rounded-md border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-800 transition hover:bg-slate-50" type="submit">Update password</button>
+        </form>
       </section>
     </main>
   )

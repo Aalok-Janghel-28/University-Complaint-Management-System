@@ -12,6 +12,7 @@ class Department(models.Model):
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
     is_active = models.BooleanField(default=True)
+    officers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='departments', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -90,11 +91,15 @@ class Complaint(models.Model):
     source = models.CharField(max_length=30, default='web')
     location = models.CharField(max_length=160, blank=True)
     escalation_level = models.IntegerField(default=0)
+    response_deadline = models.DateTimeField(null=True, blank=True)
     sla_deadline = models.DateTimeField(null=True, blank=True)
     ai_summary = models.TextField(blank=True)
     ai_sentiment = models.FloatField(default=0.0)
     ai_confidence = models.FloatField(default=0.0)
     resolution_summary = models.TextField(blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    feedback_rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    feedback_comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -107,7 +112,11 @@ class Complaint(models.Model):
             return 'not_set'
         if self.status in {self.Status.RESOLVED, self.Status.CLOSED}:
             return 'completed'
-        if timezone.now() > self.sla_deadline:
+        now = timezone.now()
+        if now > self.sla_deadline or (
+            self.response_deadline and self.status in {self.Status.NEW, self.Status.REVIEW}
+            and now > self.response_deadline
+        ):
             return 'breached'
         return 'on_track'
 
@@ -136,6 +145,17 @@ class ComplaintComment(models.Model):
 
     def __str__(self):
         return f'Comment on {self.complaint.ticket_id}'
+
+
+class ComplaintAttachment(models.Model):
+    complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to='complaints/%Y/%m/')
+    original_name = models.CharField(max_length=255)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.original_name
 
 
 class ComplaintHistory(models.Model):

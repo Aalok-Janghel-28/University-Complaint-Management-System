@@ -1,4 +1,3 @@
-import React from 'react'
 import "./Role.css"
 const Role = () => {
   return (
