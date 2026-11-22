@@ -2,38 +2,32 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
 
-def _build_user_manager():
-    namespace = {'BaseUserManager': BaseUserManager, 'User': None}
-    method_sig = "    def create_user(self, email, password=None, " + ('*' * 2) + "extra_fields):\n"
-    method_sig += "        if not email:\n"
-    method_sig += "            raise ValueError('Users must have an email address.')\n"
-    method_sig += "\n"
-    method_sig += "        email = self.normalize_email(email)\n"
-    method_sig += "        user = self.model(email=email, " + ('*' * 2) + "extra_fields)\n"
-    method_sig += "        if password is not None:\n"
-    method_sig += "            user.set_password(password)\n"
-    method_sig += "        else:\n"
-    method_sig += "            user.set_unusable_password()\n"
-    method_sig += "        user.save(using=self._db)\n"
-    method_sig += "        return user\n"
-    method_sig += "\n"
-    method_sig += "    def create_superuser(self, email, password=None, " + ('*' * 2) + "extra_fields):\n"
-    method_sig += "        extra_fields.setdefault('role', User.Role.SUPER_ADMIN)\n"
-    method_sig += "        extra_fields.setdefault('is_staff', True)\n"
-    method_sig += "        extra_fields.setdefault('is_superuser', True)\n"
-    method_sig += "        extra_fields.setdefault('is_active', True)\n"
-    method_sig += "\n"
-    method_sig += "        if extra_fields.get('is_staff') is not True:\n"
-    method_sig += "            raise ValueError('Superuser must have is_staff=True.')\n"
-    method_sig += "        if extra_fields.get('is_superuser') is not True:\n"
-    method_sig += "            raise ValueError('Superuser must have is_superuser=True.')\n"
-    method_sig += "\n"
-    method_sig += "        return self.create_user(email, password, " + ('*' * 2) + "extra_fields)\n"
-    exec("class UserManager(BaseUserManager):\n" + method_sig, namespace)
-    return namespace['UserManager']
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('Users must have an email address.')
 
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        if password is not None:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+        user.save(using=self._db)
+        return user
 
-UserManager = _build_user_manager()
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('role', self.model.Role.SUPER_ADMIN)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractUser):
